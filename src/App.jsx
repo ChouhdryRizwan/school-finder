@@ -4,11 +4,6 @@ import Header from "./components/header";
 import Footer from "./components/footer";
 import SchoolsPage from "./components/schoolsPage";
 import Home from "./components/Home";
-import "./assets/css/style.css";
-// import "./assets/js/jquery-3.4.1.min.js";
-// import "./assets/js/custom.js";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min";
 import SchoolDetails from "./components/schoolDetails.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 
