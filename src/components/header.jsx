@@ -24,7 +24,7 @@ const Header = () => {
               <div className="col-6 col-lg-9">
                 <Link to="#" className="small mr-3">
                   <span className="icon-question-circle-o mr-2"></span>
-                  <span className="d-none d-lg-inline-block"> Have a questions? </span>
+                  <span className="d-none d-lg-inline-block"> Have a questions ..? </span>
                 </Link>
                 <Link to="#" className="small mr-3">
                   <span className="icon-phone mr-2"></span>
