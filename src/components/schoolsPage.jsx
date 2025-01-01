@@ -2,47 +2,59 @@ import React, { useEffect, useState } from "react";
 import heroimage from "../assets/images/hero-img-1-min.jpg";
 import { Link } from "react-router-dom";
 
+const regions = {
+  "South America": ["Argentina"],
+  Oceania: ["Australia"],
+  "Middle East": [
+    "Bahrain",
+    "Egypt",
+    "Jordan",
+    "Kuwait",
+    "Lebanon",
+    "Oman",
+    "Qatar",
+    "Saudi Arabia",
+    "Turkey",
+    "UAE",
+  ],
+  "South Asia": ["India", "Pakistan"],
+  "Southeast Asia": ["Philippines"],
+  "Eastern Europe": ["Russia"],
+  "North America": ["United States"],
+};
+
 const SchoolsPage = () => {
-  const [schools, setSchools] = useState([]); // State for all schools
-  const [filteredSchools, setFilteredSchools] = useState([]); // State for filtered schools
-  const [searchTerm, setSearchTerm] = useState(""); // State for search input
-  const [region, setRegion] = useState(""); // State for selected region
-  const [country, setCountry] = useState(""); // State for selected country
-  const [city, setCity] = useState(""); // State for selected city
-  const [curriculum, setCurriculum] = useState(""); // State for selected curriculum
-  const [gender, setGender] = useState(""); // State for selected gender
-  const [countries, setCountries] = useState([]); // State for unique countries
-  const [cities, setCities] = useState([]); // State for unique cities
-  const [curriculums, setCurriculums] = useState([]); // State for unique curriculums
-  const [genders, setGenders] = useState([]); // State for unique genders
+  const [schools, setSchools] = useState([]);
+  const [filteredSchools, setFilteredSchools] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [region, setRegion] = useState("");
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
+  const [curriculum, setCurriculum] = useState("");
+  const [gender, setGender] = useState("");
+  const [countries, setCountries] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [curriculums, setCurriculums] = useState([]);
+  const [genders, setGenders] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const schoolsPerPage = 10;
 
-  const [currentPage, setCurrentPage] = useState(1); // State for current page
-  const schoolsPerPage = 10; // Number of schools to display per page
-
-  // Fetch school data and extract initial unique values
   useEffect(() => {
     fetch("/schools_data.json")
       .then((response) => response.json())
       .then((data) => {
         setSchools(data);
-        setFilteredSchools(data); // Initialize with all schools
-
-        const uniqueCountries = [
-          ...new Set(data.map((school) => school.country)),
-        ];
+        setFilteredSchools(data);
         const uniqueCurriculums = [
           ...new Set(data.map((school) => school.curriculum)),
         ];
         const uniqueGenders = [...new Set(data.map((school) => school.gender))];
-
-        setCountries(uniqueCountries);
         setCurriculums(uniqueCurriculums);
         setGenders(uniqueGenders);
       })
       .catch((error) => console.error("Error fetching school data:", error));
   }, []);
 
-  // Update cities dynamically when the country changes
   useEffect(() => {
     if (country) {
       const filteredCities = [
@@ -54,11 +66,10 @@ const SchoolsPage = () => {
       ];
       setCities(filteredCities);
     } else {
-      setCities([]); // Clear cities if no country is selected
+      setCities([]);
     }
   }, [country, schools]);
 
-  // Filter schools based on search term and selected filters
   useEffect(() => {
     let filtered = schools;
 
@@ -89,26 +100,32 @@ const SchoolsPage = () => {
     }
 
     setFilteredSchools(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
   }, [searchTerm, region, country, city, curriculum, gender, schools]);
 
-  // Calculate the current schools to display
+  useEffect(() => {
+    if (region) {
+      setCountries(regions[region]);
+      setCountry(""); // Reset country when region changes
+      setCity(""); // Reset city when region changes
+    } else {
+      setCountries([]); // Clear countries if no region is selected
+    }
+  }, [region]);
+
   const indexOfLastSchool = currentPage * schoolsPerPage;
   const indexOfFirstSchool = indexOfLastSchool - schoolsPerPage;
   const currentSchools = filteredSchools.slice(
     indexOfFirstSchool,
     indexOfLastSchool
   );
-
-  // Calculate total pages
   const totalPages = Math.ceil(filteredSchools.length / schoolsPerPage);
 
-  // Generate page numbers for pagination
   const getPageNumbers = () => {
     const pageNumbers = [];
-    const maxPagesToShow = 5; // Number of page numbers to show
-    const startPage = Math.max(1, currentPage - 2); // Start showing pages 2 before the current page
-    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1); // End page based on total pages
+    const maxPagesToShow = 5;
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(i);
@@ -117,6 +134,12 @@ const SchoolsPage = () => {
   };
 
   const pageNumbers = getPageNumbers();
+
+  useEffect(() => {
+    // console.log("Schools:", schools);
+    console.log("Filtered Schools:", filteredSchools);
+    // console.log("Current Schools:", currentSchools);
+  }, [schools, filteredSchools, currentSchools]);
 
   return (
     <>
@@ -132,7 +155,7 @@ const SchoolsPage = () => {
                   <h1
                     className="heading text-white"
                     data-aos="fade-up"
-                    data-aos-delay=" 100"
+                    data-aos-delay="100"
                   >
                     Find Schools
                   </h1>
@@ -193,7 +216,11 @@ const SchoolsPage = () => {
                 onChange={(e) => setRegion(e.target.value)}
               >
                 <option value="">Regions</option>
-                <option value="Middle East">Middle East</option>
+                {Object.keys(regions).map((regionKey) => (
+                  <option key={regionKey} value={regionKey}>
+                    {regionKey}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="filters">
@@ -217,7 +244,7 @@ const SchoolsPage = () => {
                 id="city"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                disabled={!country} // Disable if no country is selected
+                disabled={!country}
               >
                 <option value="">Cities</option>
                 {cities.map((city) => (
@@ -282,87 +309,93 @@ const SchoolsPage = () => {
                 </div>
               </div>
               <div className="row gy-4 mt-2">
-                {currentSchools.map((school) => (
-                  <div className="col-md-12" key={school.id}>
-                    <Link to={`/school-details/${school.id}`}>
-                      <div className="card mb-2">
-                        <div className="row">
-                          <div className="col-md-4 text-center align-content-center">
-                            <img
-                              src={school.image}
-                              className="card-img h-75 w-75"
-                              alt={school.name}
-                            />
-                          </div>
-                          <div className="col-md-8 align-content-around">
-                            <div className="card-body">
-                              <div className="card-head d-flex justify-content-between align-items-center">
-                                <h4 className="card-title fw-bold">
-                                  {school.name}
-                                </h4>
-                              </div>
-                              <p className="card-text ">
-                                {school.city}, {school.country}
-                              </p>
-                              <p className="card-text">
-                                <span className="fw-bold text-primary">
-                                  Ratings:{" "}
-                                </span>{" "}
-                                {school.rating}{" "}
-                              </p>
-                              <div className="card-check-main">
-                                <div className="row justify-content-between">
-                                  <div className="col-sm-6 col-md-6 col-lg-7 align-content-center">
-                                    <div className="main-con">
-                                      <div className="card-check d-flex align-items-center">
-                                        <i className="bx bx-check fs-4 text-primary"></i>
-                                        <p className="card-text">
-                                          <small>
-                                            <span className="fw-bold text-primary">
-                                              Curriculum:{" "}
-                                            </span>{" "}
-                                            {school.curriculum}
-                                          </small>
-                                        </p>
-                                      </div>
-                                      <div className="card-check d-flex align-items-center">
-                                        <i className="bx bx-check fs-4 text-primary"></i>
-                                        <p className="card-text">
-                                          <small>
-                                            <span className="fw-bold text-primary">
-                                              Fee:{" "}
-                                            </span>{" "}
-                                            {school.fee}
-                                          </small>
-                                        </p>
-                                      </div>
-                                      <div className="card-check d-flex align-items-center">
-                                        <i className="bx bx-check fs-4 text-primary"></i>
-                                        <p className="card-text">
-                                          <small>
-                                            <span className="fw-bold text-primary">
-                                              Gender:{" "}
-                                            </span>{" "}
-                                            {school.gender}
-                                          </small>
-                                        </p>
+                {currentSchools.length === 0 ? (
+                  <p>No schools found.</p>
+                ) : (
+                  currentSchools.map((school) => (
+                    <div className="col-md-12" key={school.id}>
+                      <Link to={`/school-details/${school.id}`}>
+                        <div className="card mb-2">
+                          <div className="row">
+                            <div className="col-md-4 text-center align-content-center">
+                              <img
+                                src={
+                                  school.image || "path/to/default/image.jpg"
+                                }
+                                className="card-img h-75 w-75"
+                                alt={school.name}
+                              />
+                            </div>
+                            <div className="col-md-8 align-content-around">
+                              <div className="card-body">
+                                <div className="card-head d-flex justify-content-between align-items-center">
+                                  <h4 className="card-title fw-bold">
+                                    {school.name}
+                                  </h4>
+                                </div>
+                                <p className="card-text ">
+                                  {school.city}, {school.country}
+                                </p>
+                                <p className="card-text">
+                                  <span className="fw-bold text-primary">
+                                    Ratings:{" "}
+                                  </span>
+                                  {school.rating}
+                                </p>
+                                <div className="card-check-main">
+                                  <div className="row justify-content-between">
+                                    <div className="col-sm-6 col-md-6 col-lg-7 align-content-center">
+                                      <div className="main-con">
+                                        <div className="card-check d-flex align-items-center">
+                                          <i className="bx bx-check fs-4 text-primary"></i>
+                                          <p className="card-text">
+                                            <small>
+                                              <span className="fw-bold text-primary">
+                                                Curriculum:{" "}
+                                              </span>
+                                              {school.curriculum}
+                                            </small>
+                                          </p>
+                                        </div>
+                                        <div className="card-check d-flex align-items-center">
+                                          <i className="bx bx-check fs-4 text-primary"></i>
+                                          <p className="card-text">
+                                            <small>
+                                              <span className="fw-bold text-primary">
+                                                Fee:{" "}
+                                              </span>
+                                              {school.fee}
+                                            </small>
+                                          </p>
+                                        </div>
+                                        <div className="card-check d-flex align-items-center">
+                                          <i className="bx bx-check fs-4 text-primary"></i>
+                                          <p className="card-text">
+                                            <small>
+                                              <span className="fw-bold text-primary">
+                                                Gender:{" "}
+                                              </span>
+                                              {school.gender}
+                                            </small>
+                                          </p>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="col-sm-6 col-md-6 col-lg-4 text-center align-content-center">
-                                    <button className="btn btn-outline-primary btn-sm px-2 rounded-5">
-                                      See Details
-                                    </button>
+                                    <div className="col-sm-6 col-md-6 col-lg-4 text-center align-content-center">
+                                      <button className="btn btn-outline-primary btn-sm px-2 rounded-5">
+                                        See Details
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </Link>
-                  </div>
-                ))}
+                      </Link>
+                    </div>
+                  ))
+                )}
               </div>
               <div className="pagination d-block d-md-flex justify-content-center my-4">
                 <button
