@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const regions = {
   "South America": ["Argentina"],
-  Oceania: ["Australia"],
+  "Oceania": ["Australia"],
   "Middle East": [
     "Bahrain",
     "Egypt",
@@ -135,11 +135,10 @@ const SchoolsPage = () => {
 
   const pageNumbers = getPageNumbers();
 
-  useEffect(() => {
-    // console.log("Schools:", schools);
-    console.log("Filtered Schools:", filteredSchools);
-    // console.log("Current Schools:", currentSchools);
-  }, [schools, filteredSchools, currentSchools]);
+  const capitalizeFirstLetter = (string) => {
+    if (!string) return ""; // Handle empty strings
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
 
   return (
     <>
@@ -244,12 +243,11 @@ const SchoolsPage = () => {
                 id="city"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                disabled={!country}
               >
                 <option value="">Cities</option>
                 {cities.map((city) => (
                   <option key={city} value={city}>
-                    {city}
+                    {capitalizeFirstLetter(city)}
                   </option>
                 ))}
               </select>
@@ -334,7 +332,7 @@ const SchoolsPage = () => {
                                   </h4>
                                 </div>
                                 <p className="card-text ">
-                                  {school.city}, {school.country}
+                                {capitalizeFirstLetter(school.city)}, {school.country}
                                 </p>
                                 <p className="card-text">
                                   <span className="fw-bold text-primary">

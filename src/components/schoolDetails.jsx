@@ -36,6 +36,11 @@ const SchoolDetails = () => {
     setIsExpanded(!isExpanded);
   };
 
+  const capitalizeFirstLetter = (string) => {
+    if (!string) return ""; // Handle empty strings
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+
   return (
     <>
       <div
@@ -60,7 +65,7 @@ const SchoolDetails = () => {
                     data-aos-delay="200"
                   >
                     <p>
-                      {school.city}, {school.country}
+                      {capitalizeFirstLetter(school.city)}, {school.country}
                     </p>{" "}
                     {/* Display location */}
                   </div>
