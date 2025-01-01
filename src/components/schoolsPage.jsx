@@ -19,7 +19,7 @@ const SchoolsPage = () => {
   const [currentPage, setCurrentPage] = useState(1); // State for current page
   const schoolsPerPage = 10; // Number of schools to display per page
 
-  // Fetch school data from JSON file
+  // Fetch school data and extract initial unique values
   useEffect(() => {
     fetch("/schools_data.json")
       .then((response) => response.json())
@@ -27,19 +27,36 @@ const SchoolsPage = () => {
         setSchools(data);
         setFilteredSchools(data); // Initialize with all schools
 
-        // Extract unique countries, cities, curriculums, and genders
-        const uniqueCountries = [...new Set(data.map((school) => school.country))];
-        const uniqueCities = [...new Set(data.map((school) => school.city))];
-        const uniqueCurriculums = [...new Set(data.map((school) => school.curriculum))];
+        const uniqueCountries = [
+          ...new Set(data.map((school) => school.country)),
+        ];
+        const uniqueCurriculums = [
+          ...new Set(data.map((school) => school.curriculum)),
+        ];
         const uniqueGenders = [...new Set(data.map((school) => school.gender))];
 
         setCountries(uniqueCountries);
-        setCities(uniqueCities);
         setCurriculums(uniqueCurriculums);
         setGenders(uniqueGenders);
       })
       .catch((error) => console.error("Error fetching school data:", error));
   }, []);
+
+  // Update cities dynamically when the country changes
+  useEffect(() => {
+    if (country) {
+      const filteredCities = [
+        ...new Set(
+          schools
+            .filter((school) => school.country === country)
+            .map((school) => school.city)
+        ),
+      ];
+      setCities(filteredCities);
+    } else {
+      setCities([]); // Clear cities if no country is selected
+    }
+  }, [country, schools]);
 
   // Filter schools based on search term and selected filters
   useEffect(() => {
@@ -78,7 +95,10 @@ const SchoolsPage = () => {
   // Calculate the current schools to display
   const indexOfLastSchool = currentPage * schoolsPerPage;
   const indexOfFirstSchool = indexOfLastSchool - schoolsPerPage;
-  const currentSchools = filteredSchools.slice(indexOfFirstSchool, indexOfLastSchool);
+  const currentSchools = filteredSchools.slice(
+    indexOfFirstSchool,
+    indexOfLastSchool
+  );
 
   // Calculate total pages
   const totalPages = Math.ceil(filteredSchools.length / schoolsPerPage);
@@ -92,7 +112,7 @@ const SchoolsPage = () => {
 
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(i);
- }
+    }
     return pageNumbers;
   };
 
@@ -197,6 +217,7 @@ const SchoolsPage = () => {
                 id="city"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
+                disabled={!country} // Disable if no country is selected
               >
                 <option value="">Cities</option>
                 {cities.map((city) => (
@@ -206,6 +227,7 @@ const SchoolsPage = () => {
                 ))}
               </select>
             </div>
+
             <h5>Filters</h5>
             <div className="filters">
               <select
@@ -344,7 +366,9 @@ const SchoolsPage = () => {
               </div>
               <div className="pagination d-block d-md-flex justify-content-center my-4">
                 <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
                   disabled={currentPage === 1}
                   className="btn btn-outline-primary btn-sm mx-1"
                 >
@@ -354,13 +378,19 @@ const SchoolsPage = () => {
                   <button
                     key={number}
                     onClick={() => setCurrentPage(number)}
-                    className={`btn mx-1 btn-sm mt-3 mt-md-0 ${currentPage === number ? 'btn-primary' : 'btn-outline-primary'}`}
+                    className={`btn mx-1 btn-sm mt-3 mt-md-0 ${
+                      currentPage === number
+                        ? "btn-primary"
+                        : "btn-outline-primary"
+                    }`}
                   >
                     {number}
                   </button>
                 ))}
                 <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
                   disabled={currentPage === totalPages}
                   className="btn btn-outline-primary btn-sm mx-1 mt-3 mt-md-0"
                 >
