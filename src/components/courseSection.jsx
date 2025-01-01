@@ -22,19 +22,20 @@ const CourseSection = () => {
           city: data.city,
           state: data.region,
         });
-        fetchSchools(data.country, data.city); // Fetch schools based on location
+        console.log(data);
+        fetchSchools(data.city); // Fetch schools based on location
       })
       .catch((error) => console.error("Error fetching location data:", error));
   }, []);
 
   // Fetch schools based on country and city
-  const fetchSchools = (country, city) => {
+  const fetchSchools = (city) => {
     fetch("/schools_data.json")
       .then((response) => response.json())
       .then((data) => {
         let filteredSchools;
         // Filter schools by city
-        filteredSchools = data.filter((school) => school.city === city);
+        filteredSchools = data.filter((school) => capitalizeFirstLetter(school.city) == capitalizeFirstLetter(city));
 
         setSchools(filteredSchools);
         setLoading(false); // Set loading to false once schools data is fetched
@@ -57,6 +58,12 @@ const CourseSection = () => {
   // Show more schools when the button is clicked
   const handleSeeMore = () => {
     setVisibleSchools((prevVisible) => prevVisible + 4); // Increase the number of visible schools
+  };
+
+  
+  const capitalizeFirstLetter = (string) => {
+    if (!string) return ""; // Handle empty strings
+    return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
   return (
@@ -102,7 +109,7 @@ const CourseSection = () => {
                   </Link>
                   <div className="custom-media-body">
                     <h3>{truncateSchoolName(school.name)}</h3>
-                    <span>{school.city || "N/A"}</span> ,{" "}
+                    <span>{capitalizeFirstLetter(school.city) || "N/A"}</span> ,{" "}
                     <span>{school.country || "N/A"}</span>
                     <div className="justify-content-between mt-2">
                       <div className="text-primary">
