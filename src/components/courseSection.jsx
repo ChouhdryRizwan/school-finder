@@ -117,7 +117,7 @@ const CourseSection = () => {
                         <span>{school.curriculum || "N/A"}</span>
                       </div>
                       <div className="review mt-2">
-                        <span class Name="icon-star"></span>{" "}
+                        <span className="icon-star"></span>{" "}
                         <span>{school.rating || "N/A"}</span>
                       </div>
                     </div>
